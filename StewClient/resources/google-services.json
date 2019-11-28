@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "347545147025",
+    "firebase_url": "https://stewalert.firebaseio.com",
+    "project_id": "stewalert",
+    "storage_bucket": "stewalert.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:347545147025:android:93db37aa60785bdeb45130",
+        "android_client_info": {
+          "package_name": "com.bumblebeebro.stewalert"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "347545147025-0p6acksgfsigvob35qdtrivkigddip41.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbzxXWEyBnWumExfG1FP-ct96Akd-EsLE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "347545147025-0p6acksgfsigvob35qdtrivkigddip41.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
