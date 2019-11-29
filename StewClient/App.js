@@ -102,13 +102,13 @@ export default class App extends Component {
 
 		const currentDate = new Date().getTime();
 
-		const days = Math.round((currentDate - date) / (1000 * 3600 * 24));
+		const days = Math.round((date - currentDate) / (1000 * 3600 * 24));
 
 		if (days <= 0) {
-			return "Today"
+			return "Heute"
 		} else {
 
-			return "In " + days + " days"
+			return "In " + days + " Tagen"
 		}
 	}
 
