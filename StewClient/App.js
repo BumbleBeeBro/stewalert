@@ -3,6 +3,7 @@ import { StyleSheet, Text, View, Button, FlatList, ActivityIndicator} from 'reac
 import Constants from 'expo-constants';
 import * as startup from "./components/startup";
 import * as WebBrowser from 'expo-web-browser';
+import Moment from 'moment';
 
 const styles = StyleSheet.create({
 	container: {
@@ -11,6 +12,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginHorizontal: 16,
+		marginBottom: 10,
 	},
 	title: {
 		fontSize: 30,
@@ -33,6 +35,11 @@ const styles = StyleSheet.create({
 		margin: 10,
 		padding: 10,
 		width: "40%",
+	},
+	fixToText: {
+		width: '100%',
+		flexDirection: 'row',
+		justifyContent: 'space-between',
 	}
 });
 
@@ -57,22 +64,26 @@ export default class App extends Component {
 		});
 	}
 		render() {
+			Moment.locale('en');
 			return (
 				<View style={styles.container}>
 					<Text style={styles.title}>Die nächsten Eintöpfe gibt es am:</Text>
 					{this.state.isLoading ? <ActivityIndicator style={styles.wait}/> : 
-					<FlatList data={this.state.stews} keyExtractor={item =>  item.datestring} renderItem={({item}) => <Text style={styles.item}> {item.datestring} </Text>}/>
+						<FlatList data={this.state.stews} keyExtractor={item => item.datestring} renderItem={({ item }) => <Text style={styles.item}> {this.getRelativeDay(item.date)} ({item.datestring}) </Text>}/>
 					}
-					<Button style={styles.button}
+					
+					<View style={styles.fixToText} >
+						<Button style={styles.button}
 						onPress={startup.default}
-						title="Rerun startup!"
-						color="#841584"
+						title="Aktiviere Benachrichtigung"
+						color="#C1FFA6"
 					/>
 					<Button style={styles.button}
 						onPress={this.openDaVinci}
 						title="Speiseplan"
-						color="#841584"
+						color="#C1FFA6"
 					/>
+					</View>
 				</View>
 			);
 		}
@@ -85,6 +96,20 @@ export default class App extends Component {
 			},
 		});
 		return response.json();
+	}
+
+	getRelativeDay(date) {
+
+		const currentDate = new Date().getTime();
+
+		const days = Math.round((currentDate - date) / (1000 * 3600 * 24));
+
+		if (days <= 0) {
+			return "Today"
+		} else {
+
+			return "In " + days + " days"
+		}
 	}
 
 	async openDaVinci() {

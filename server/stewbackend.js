@@ -3,6 +3,7 @@ const cheerio = require('cheerio');
 const express = require('express');
 const { Expo } = require('expo-server-sdk');
 const schedule = require('node-schedule');
+const moment = require('moment');
 
 const app = express();
 
@@ -56,7 +57,7 @@ const getStews = async () => {
 		if (eintopf) {
 			eintoepfe.push({
 				datestring: date.slice(-10),
-				date: Date.parse(date.slice(-10)),
+				date: moment(date.slice(-10), 'DD.MM.YYYY').toDate().getTime(),
 				eintopf: eintopf
 			});
 		}
@@ -67,7 +68,7 @@ const getStews = async () => {
 
 }
 
-const sendMessages = () => {
+const sendMessages = (message) => {
 	for (let token of clientTokens) {
 
 		console.log("Starting to send Messages to token: " + token);
@@ -80,7 +81,7 @@ const sendMessages = () => {
 		messages.push({
 			to: token,
 			sound: 'default',
-			body: "Den nächsten Eintopf gibt es am: " + stews[0].datestring,
+			body: "Den nächsten Eintopf gibt es " + message + "(" + stews[0].datestring + ")",
 			title: "Eintopf Alert",
 		});
 
@@ -145,6 +146,7 @@ const sendMessages = () => {
 	}
 }
 
+
 app.get('/send-notifications', function (req, res) {
 	sendMessages();
 	res.send("Done")
@@ -176,7 +178,27 @@ app.post('/client-id', function (req, res) {
 });
 
 schedule.scheduleJob('0 10 * * *', () => {
-	console.log("sending notifications at: " + Date.now().toString());
+
+	
+
+	stews.forEach(stew => {
+
+		const currentDate = new Date().getTime();
+
+		const days = Math.round((stew.date - date) / (1000 * 3600 * 24));
+
+		if (days <= 0) {
+			console.log("sending notifications at: " + Date.now());
+			getStews()
+			sendMessages("heute");
+		} else {
+			console.log("sending notifications at: " + Date.now());
+			getStews()
+			sendMessages("in " + days + " Tagen");
+		}
+		stew.date
+	})
+	
 	getStews()
 	sendMessages();
 })
