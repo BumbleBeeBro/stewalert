@@ -40,7 +40,7 @@ app.post('/client-id', function (req, res) {
 
 });
 
-schedule.scheduleJob('* 10 * * *', async () => {
+schedule.scheduleJob('0 10 * * *', async () => {
 
 	console.log("sending notifications at: " + moment().format('MMMM Do YYYY, h:mm:ss a'));
 
@@ -63,20 +63,25 @@ schedule.scheduleJob('* 10 * * *', async () => {
 
 	const currentDate = new Date().getTime();
 
-	const days = Math.round(((nextStew.date - currentDate) / (1000 * 3600 * 24)) + 0.5);
+	try {
+		const days = Math.round(((nextStew.date - currentDate) / (1000 * 3600 * 24)) + 0.5);
+		if (days <= 0) {
 
-	console.log(days);
+			console.log("Sending Message for stew today");
+			messageService.sendMessages("heute", nextStew);
+		} else if (days <= 1) {
 
-	if (days <= 0) {
+			console.log("Sending Message for stew in " + days);
+			messageService.sendMessages("in " + days + " Tag", nextStew);
+		}
+		else {
 
-		messageService.sendMessages("heute", nextStew);
-	} else if (days <= 1) {
-
-		messageService.sendMessages("in " + days + " Tag", nextStew);
-	}
-	else {
-
-		messageService.sendMessages("in " + days + " Tagen", nextStew);
+			console.log("Sending Message for stew in " + days);
+			messageService.sendMessages("in " + days + " Tagen", nextStew);
+		}
+	} catch (error) {
+		console.log("No stew soon, " + error);
+		messageService.sendMessages("in mehr als 10 Tagen", nextStew);
 	}
 })
 
