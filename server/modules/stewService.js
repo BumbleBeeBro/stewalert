@@ -2,52 +2,85 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const moment = require('moment');
 
-const url = 'https://www.stw-muenster.de/de/essen-trinken/mensen/da-vinci';
+const url = 'https://muenster.my-mensa.de/essen.php?mensa=davinci';
 
 const getStews = async () => {
 	let response = await axios(url)
 
 	const html = response.data;
+	//root element of page to scrape
 	const $ = cheerio.load(html);
 
-	const days = $('li.accordion-item');
+	const day = $('ul.checkgroupdividers');
 
-	const eintoepfe = [];
+	const meals = [];
 
-	days.each(function () {
-		const meals = $(this).find('div.food');
+	const stews = []
 
-		const date = $(this).find('a.accordion-title').find('span').text().trim();
+	const currDate = new Date();
 
-		//console.log(date);
+	//check if today is a weekend day subject to put in seperate function
+	if (currDate.getDay() === 0) {
+		date.setDate(date.getDate() + 1)
+	} else if (currDate.getDay() === 6) {
+		date.setDate(date.getDate() + 2)
+	}
 
+	let currMeal = {
+		heading: null,
+		parts: [],
+		eintopf: false,
+		date: null
+	};
 
-		let eintopf = false;
+	day.children().each((_, elem) => {
 
-		meals.each(function () {
-			const meal = $(this).find('span.food-menu-title').text().trim();
+		let menuHeading = $(elem).find('div').text().trim();
 
-			if (meal === 'Eintopf') {
-				eintopf = true;
+		if (menuHeading === '') {
+			let part = $(elem).find('h3.text2share').text();
+			currMeal.parts.push(part);
+		} else if (menuHeading.includes("Menü 1")) {
+			currDate.setDate(currDate.getDate() + 1)
+
+			//check if today is a weekend day
+			if (currDate.getDay() === 0) {
+				currDate.setDate(currDate.getDate() + 1)
+			} else if (currDate.getDay() === 6) {
+				currDate.setDate(currDate.getDate() + 2)
 			}
+		} else {
+			//for first iteration, populate object before pushing it
+			if (currMeal.heading == null) {
+				currMeal.heading = menuHeading;
+				currMeal.parts = []
+				currMeal.date = new Date(currDate.getTime())
+				meals.push(Object.assign({}, currMeal));
+			} else {
+				meals.push(Object.assign({}, currMeal));
+				currMeal.heading = menuHeading;
+				currMeal.parts = []
+				currMeal.date = new Date(currDate.getTime())
 
-			//console.log(meal);
-
-			//console.log(eintopf);
-
-		});
-
-		if (eintopf) {
-			eintoepfe.push({
-				datestring: date.slice(-10),
-				date: moment(date.slice(-10), 'DD.MM.YYYY').toDate().getTime(),
-				eintopf: eintopf
-			});
+			}
 		}
+	});
 
-	})
+	meals[3].heading = 'Eintopf';
 
-	return eintoepfe;
+	meals.forEach((meal) => {
+		if (meal.heading.includes('Eintopf')) {
+			meal.eintopf = true;
+
+			stews.push({
+				datestring: `${meal.date.getDate()}.${meal.date.getMonth() + 1}.${meal.date.getFullYear()}`,
+				date: meal.date,
+				eintopf: meal.parts[0]
+			})
+		}
+	});
+
+	return stews;
 
 }
 
